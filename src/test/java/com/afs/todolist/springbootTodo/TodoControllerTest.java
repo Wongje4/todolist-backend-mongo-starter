@@ -68,8 +68,30 @@ public class TodoControllerTest {
         final Todo updatedTodo = todoRepository.findAll().get(0);
         assertThat(updatedTodo.getText(), equalTo("testing text1"));
         assertThat(updatedTodo.getDone(), equalTo(false));
-
     }
 
+    @Test
+    void should_return_updated_todo_text_when_perform_put_given_todo_id_and_text() throws Exception {
+        //given
+        String todoId = new ObjectId().toString();
+        todoRepository.save(new Todo(todoId, "testing text1", true));
+        Todo updateTodo = (new Todo(todoId, "updated_text", true));
+
+        String updateTodoJson = new ObjectMapper().writeValueAsString(updateTodo);
+
+        //when
+        client.perform(MockMvcRequestBuilders.put("/todos/{id}", todoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateTodoJson))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("id").isString())
+                .andExpect(MockMvcResultMatchers.jsonPath("text").value("updated_text"))
+                .andExpect(MockMvcResultMatchers.jsonPath("done").value(true));
+
+        // then
+        final Todo updatedTodo = todoRepository.findAll().get(0);
+        assertThat(updatedTodo.getText(), equalTo("updated_text"));
+        assertThat(updatedTodo.getDone(), equalTo(true));
+    }
 
 }
