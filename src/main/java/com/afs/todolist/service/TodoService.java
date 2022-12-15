@@ -52,4 +52,7 @@ public class TodoService {
                 .orElseThrow(() -> new TodoNotFoundException(id));
     }
 
+    public void delete(String id) {
+        todoRepository.deleteById(id);
+    }
 }
