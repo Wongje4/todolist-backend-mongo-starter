@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-
+import static org.hamcrest.Matchers.*;
 @SpringBootTest
 @AutoConfigureMockMvc
 public class TodoControllerTest {
@@ -117,6 +117,20 @@ public class TodoControllerTest {
         assertThat(todos.get(0).getText(), equalTo("newtext"));
         assertThat(todos.get(0).getDone(), equalTo(false));
 
+    }
+
+    @Test
+    void should_return_204_when_perform_delete_given_todo() throws Exception {
+        //given
+        String todoId = new ObjectId().toString();
+        Todo createdTodo = todoRepository.save(new Todo(todoId, "newtext", false));
+
+        //when
+        client.perform(MockMvcRequestBuilders.delete("/todos/{id}" ,todoId))
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
+
+        //then
+        assertThat(todoRepository.findAll(), empty());
     }
 
 }
