@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -92,6 +94,29 @@ public class TodoControllerTest {
         final Todo updatedTodo = todoRepository.findAll().get(0);
         assertThat(updatedTodo.getText(), equalTo("updated_text"));
         assertThat(updatedTodo.getDone(), equalTo(true));
+    }
+
+    @Test
+    void should_create_new_todo_when_perform_post_given_new_todo() throws Exception {
+        //given
+        String todoId = new ObjectId().toString();
+        Todo newTodo = new Todo(todoId, "newtext", false);
+        String newTodoJson = new ObjectMapper().writeValueAsString(newTodo);
+
+        //when
+        client.perform(MockMvcRequestBuilders.post("/todos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newTodoJson))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.jsonPath("id").isString())
+                .andExpect(MockMvcResultMatchers.jsonPath("text").value("newtext"))
+                .andExpect(MockMvcResultMatchers.jsonPath("done").value(false));
+
+        // then
+        final List<Todo> todos = todoRepository.findAll();
+        assertThat(todos.get(0).getText(), equalTo("newtext"));
+        assertThat(todos.get(0).getDone(), equalTo(false));
+
     }
 
 }
